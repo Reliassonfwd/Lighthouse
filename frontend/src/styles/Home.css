@@ -1,0 +1,25 @@
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.card {
+  width: 200px;
+  height: 200px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  margin: 5px;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: rgb(227, 26, 26);
+  background-color: #373636;
+  text-align: center;
+}
+
+
+a {
+  text-decoration: none;
+}
