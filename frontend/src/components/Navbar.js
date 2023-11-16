@@ -19,13 +19,13 @@ const Navbar = () => {
             <Link to="payments">Payment</Link>
           </li>
 
-          <li className="Log">
+          {/* <li className="Log">
             <Link to="login">Login</Link>
           </li>
 
           <li className="Log">
             <Link to="register">Register</Link>
-          </li>
+          </li> */}
           
         </ul>
       </nav>

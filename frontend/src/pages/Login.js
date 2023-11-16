@@ -75,45 +75,68 @@
 
 // export default Login;
 
-import { useRef } from "react"
+import React, { useRef } from "react";
+import { connect } from "react-redux";
+import { loginSuccess } from "../actions/auth";
+import { fetchDataSuccess } from "../actions/data";
 import "../styles/Login.css";
 
-const Login = ({ setCurrUser, setShow }) => {
-  const formRef = useRef()
-  const login = async (userInfo, setCurrUser) => {
-    const url = "http://localhost:3001/login"
+const Login = ({ loginSuccess, fetchDataSuccess }) => {
+  const formRef = useRef();
+
+  const login = async (userInfo) => {
     try {
-      const response = await fetch(url, {
+      // Realizar la lógica de autenticación con tu API
+      const response = await fetch("http://localhost:3001/login", {
         method: "post",
         headers: {
           'content-type': 'application/json',
           'accept': 'application/json'
         },
         body: JSON.stringify(userInfo)
-      })
-      const data = await response.json()
-      if (!response.ok)
-        throw data.error
-      localStorage.setItem("token", response.headers.get("Authorization"))
-      setCurrUser(data)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw data.error;
+      }
+
+      // Almacenar el token y actualizar el estado de autenticación
+      localStorage.setItem("token", response.headers.get("Authorization"));
+      loginSuccess(data);
+
+      // Ejemplo de cómo cargar datos después de la autenticación
+      const fetchDataResponse = await fetch("http://localhost:3001/v1", {
+        method: "get",
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const fetchData = await fetchDataResponse.json();
+
+      if (!fetchDataResponse.ok) {
+        throw fetchData.error;
+      }
+
+      // Actualizar el estado con los datos obtenidos
+      fetchDataSuccess(fetchData);
     } catch (error) {
-      console.log("error", error)
+      console.log("error", error);
     }
-  }
-  const handleSubmit = e => {
-    e.preventDefault()
-    const formData = new FormData(formRef.current)
-    const data = Object.fromEntries(formData)
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(formRef.current);
+    const data = Object.fromEntries(formData);
     const userInfo = {
       "user": { email: data.email, password: data.password }
-    }
-    login(userInfo, setCurrUser)
-    e.target.reset()
-  }
-  const handleClick = e => {
-    e.preventDefault()
-    setShow(false)
-  }
+    };
+    login(userInfo);
+    e.target.reset();
+  };
+
   return (
     <div>
       <form ref={formRef} onSubmit={handleSubmit}>
@@ -124,8 +147,9 @@ const Login = ({ setCurrUser, setShow }) => {
         <input type='submit' value="Login" />
       </form>
       <br />
-      <div>Not registered yet, <a href="#signup" onClick={handleClick} >Signup</a> </div>
+      <div>Not registered yet, <a href="#signup">Signup</a> </div>
     </div>
-  )
+  );
 }
-export default Login
+
+export default connect(null, { loginSuccess, fetchDataSuccess })(Login);

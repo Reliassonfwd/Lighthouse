@@ -1,63 +1,48 @@
-import React, { useState } from "react";
-import "../styles/Home.css";
-import { Link } from "react-router-dom";
-import logoImg from "../images/lighthouse_logo.png";
+import React, { useEffect } from "react";
+import { connect } from "react-redux";
+import { fetchDataSuccess } from "../actions/data";
+import "../styles/Home.css"
 
-const cards = [...Array(28)].map((_, i) => ({
-  id: i,
-  content: `Card ${i + 1}`,
-}));
+const Tour = ({ fetchDataSuccess, data }) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Realizar la lógica para obtener datos desde tu API
+        const response = await fetch("http://localhost:3001/tourData", {
+          method: "get",
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-const Tour = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const cardsPerPage = 14;
+        const responseData = await response.json();
 
-  const indexOfLastCard = currentPage * cardsPerPage;
-  const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCards = cards.slice(indexOfFirstCard, indexOfLastCard);
+        if (!response.ok) {
+          throw responseData.error;
+        }
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+        // Actualizar el estado con los datos obtenidos
+        fetchDataSuccess(responseData);
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+
+    fetchData();
+  }, [fetchDataSuccess]);
 
   return (
-    <>
-      <div className="App">
-        <img className="Logoimg" src={logoImg} alt="Logo" />
-
-        <Link to="/Reservation">
-          <h1>RESERVA AHORA!</h1>
-        </Link>
-
-        <div className="card-grid">
-          {currentCards.map((card) => (
-            <div className="card" key={card.id}>
-              {card.content}
-            </div>
-          ))}
-        </div>
-        <br />
-        <br />
-        <br />
-
-        <div className="pagination">
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-
-          <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === Math.ceil(cards.length / cardsPerPage)}
-          >
-            Next
-          </button>
-        </div>
-        <br />
-        <br />
-      </div>
-    </>
+    <div>
+      {/* Renderiza los datos obtenidos según tu lógica */}
+      {data.map((item) => (
+        <div key={item.id}>{item.content}</div>
+      ))}
+    </div>
   );
 };
 
-export default Tour;
+const mapStateToProps = (state) => ({
+  data: state.data.data,
+});
+
+export default connect(mapStateToProps, { fetchDataSuccess })(Tour);
